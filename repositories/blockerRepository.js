@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../config/databaseConfig');
 
 class BlockerRepository {
   async getDomains(userId, search = '', limit = 50, offset = 0) {

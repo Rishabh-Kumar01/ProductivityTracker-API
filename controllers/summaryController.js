@@ -42,6 +42,26 @@ class SummaryController {
       next(err);
     }
   };
+
+  getWebsites = async (req, res, next) => {
+    try {
+      const { date, startDate, endDate } = req.query;
+      let start, end;
+      if (date) {
+        start = new Date(`${date}T00:00:00Z`);
+        end = new Date(`${date}T23:59:59.999Z`);
+      } else if (startDate && endDate) {
+        start = new Date(startDate);
+        end = new Date(endDate);
+      } else {
+        return next(new AppError('date or startDate/endDate required', 400));
+      }
+      const websites = await summaryService.getWebsites(req.user.id, start, end);
+      res.status(200).json({ status: 'success', data: websites });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 module.exports = new SummaryController();

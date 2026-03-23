@@ -68,6 +68,10 @@ const summaryService = {
     const startDate = new Date(startDateString);
     const endDate = new Date(endDateString);
     return summaryRepository.getHourlyPattern(userId, startDate, endDate);
+  },
+
+  async getWebsites(userId, startDate, endDate) {
+    return summaryRepository.getWebsites(userId, startDate, endDate);
   }
 };
 

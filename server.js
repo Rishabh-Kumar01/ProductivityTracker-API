@@ -23,6 +23,7 @@ app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/sessions', require('./routes/sessionRoutes'));
 app.use('/api/export', require('./routes/exportRoutes'));
 app.use('/api/alerts', require('./routes/alertRoutes'));
+app.use('/api/blocker', require('./routes/blockerRoutes'));
 
 // Unhandled route
 app.use((req, res, next) => {

@@ -11,8 +11,8 @@ const activityRepository = {
       const inserted = [];
       for (const act of activities) {
         const { rows } = await client.query(
-          `INSERT INTO activities (user_id, app_name, bundle_id, window_title, url, category, productivity_score, start_time, end_time, is_idle)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          `INSERT INTO activities (user_id, app_name, bundle_id, window_title, url, domain, category, productivity_score, start_time, end_time, is_idle)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
            ON CONFLICT (user_id, app_name, start_time) DO NOTHING
            RETURNING id`,
           [
@@ -21,6 +21,7 @@ const activityRepository = {
             act.bundleId || null,
             act.windowTitle || null,
             act.url || null,
+            act.domain || null,
             act.category || 'Uncategorized',
             act.productivityScore || 2,
             act.startTime,

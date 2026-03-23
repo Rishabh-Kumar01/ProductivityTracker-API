@@ -13,7 +13,7 @@ const activityRepository = {
         const { rows } = await client.query(
           `INSERT INTO activities (user_id, app_name, bundle_id, window_title, url, category, productivity_score, start_time, end_time, is_idle)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-           ON CONFLICT DO NOTHING
+           ON CONFLICT (user_id, app_name, start_time) DO NOTHING
            RETURNING id`,
           [
             userId,

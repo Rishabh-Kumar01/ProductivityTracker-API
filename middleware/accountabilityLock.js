@@ -72,6 +72,13 @@ const requirePartnerUnlock = async (req, res, next) => {
 
         // Password matches! Proceed
         const newToken = accountabilityService.issueUnlockToken(targetUserId);
+        
+        // Log successful bypass
+        await accountabilityRepository.logEvent(targetUserId, 'physical_password_unlock', {
+            ip: req.ip,
+            userAgent: req.get('User-Agent')
+        });
+
         res.setHeader('X-Unlock-Token', newToken);
         next();
     } catch (error) {

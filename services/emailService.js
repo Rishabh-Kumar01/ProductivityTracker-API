@@ -23,7 +23,7 @@ exports.sendOTP = async (to, otp) => {
                 <p>Please enter this code on the user's computer to proceed with setting up your password.</p>
             `
         });
-        console.log(`[EmailService] Sent OTP to ${to}`);
+        console.log(`[EmailService] Sent OTP to ${to}, ${otp}`);
     } catch (error) {
         console.error('[EmailService] Failed to send OTP email:', error);
     }
@@ -31,7 +31,7 @@ exports.sendOTP = async (to, otp) => {
 
 exports.sendTamperAlert = async (to) => {
     if (!resend) return console.log(`[EmailService] Simulated Tamper Alert to ${to}`);
-    
+
     try {
         await resend.emails.send({
             from: fromEmail,

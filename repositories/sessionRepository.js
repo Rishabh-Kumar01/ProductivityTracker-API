@@ -1,18 +1,19 @@
 const db = require('../config/databaseConfig');
 
 const sessionRepository = {
-  async create({ userId, tokenHash, deviceName, os, ipAddress, expiresAt }) {
+  async create({ userId, tokenHash, deviceName, os, ipAddress, expiresAt, role = 'owner', linkedUserId = null }) {
     const { rows } = await db.query(
-      `INSERT INTO sessions (user_id, token_hash, device_name, os, ip_address, expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [userId, tokenHash, deviceName, os, ipAddress, expiresAt]
+      `INSERT INTO sessions (user_id, token_hash, device_name, os, ip_address, expires_at, role, linked_user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [userId, tokenHash, deviceName, os, ipAddress, expiresAt, role, linkedUserId]
     );
     return rows[0];
   },
 
   async findByTokenHash(tokenHash) {
     const { rows } = await db.query(
-      `SELECT s.*, u.email, u.name FROM sessions s
+      `SELECT s.*, u.email, u.name 
+       FROM sessions s
        JOIN users u ON s.user_id = u.id
        WHERE s.token_hash = $1 AND s.is_revoked = FALSE AND s.expires_at > NOW()`,
       [tokenHash]

@@ -41,7 +41,7 @@ exports.verifyPartner = async (req, res) => {
 exports.setPassword = async (req, res) => {
     try {
         const { partnerEmail, password } = req.body;
-        const userId = req.user.id; // from auth.protect
+        const userId = req.targetUserId || req.user.id; // from partnerAccess
 
         if (!partnerEmail || !password) {
             return res.status(400).json({ status: 'error', message: 'Email and password required' });
@@ -61,7 +61,7 @@ exports.setPassword = async (req, res) => {
 
 exports.deactivateLock = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.targetUserId || req.user.id;
         
         // Note: The accountabilityLock middleware ensures X-Partner-Password was provided and valid
         await accountabilityService.deactivateLock(userId);
@@ -78,7 +78,7 @@ exports.deactivateLock = async (req, res) => {
 
 exports.getStatus = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.targetUserId || req.user.id;
         const status = await accountabilityService.getStatus(userId);
         res.status(200).json({ status: 'success', data: status });
     } catch (error) {
@@ -88,7 +88,7 @@ exports.getStatus = async (req, res) => {
 
 exports.getEvents = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.targetUserId || req.user.id;
         const events = await accountabilityService.getEvents(userId);
         res.status(200).json({ status: 'success', data: { events } });
     } catch (error) {
@@ -110,7 +110,7 @@ exports.recordHeartbeat = async (req, res) => {
 
 exports.reportTamperEvent = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.targetUserId || req.user.id;
         await accountabilityService.reportTamperEvent(userId);
         res.status(201).json({ status: 'success' });
     } catch (error) {

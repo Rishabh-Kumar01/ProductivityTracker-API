@@ -10,6 +10,9 @@ const {
     reportTamperEvent
 } = require('../controllers/accountabilityController');
 const { requirePartnerUnlock } = require('../middleware/accountabilityLock');
+const { partnerAccess } = require('../middleware/partnerAccess');
+
+router.use(partnerAccess);
 
 router.post('/activate', activateLock);
 router.post('/verify-partner', verifyPartner);

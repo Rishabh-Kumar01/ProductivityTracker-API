@@ -31,7 +31,13 @@ const protect = async (req, res, next) => {
     }
 
     // GRANT ACCESS TO PROTECTED ROUTE
-    req.user = currentUser;
+    req.user = {
+      id: currentUser.id,
+      email: currentUser.email,
+      name: currentUser.name,
+      role: decoded.role || 'owner',
+      linkedUserId: decoded.linkedUserId || null
+    };
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {

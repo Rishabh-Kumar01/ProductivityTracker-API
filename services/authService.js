@@ -5,6 +5,7 @@ const userRepository = require('../repositories/userRepository');
 const sessionRepository = require('../repositories/sessionRepository');
 const { signToken } = require('../utils/tokenUtils');
 const AppError = require('../utils/error');
+const db = require('../config/databaseConfig');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -103,6 +104,21 @@ const authService = {
     // Enforce max 5 sessions
     await sessionRepository.enforceLimit(user.id, 5);
 
+    // Default to owner role
+    let role = 'owner';
+    let linkedUserId = null;
+
+    // Check if this email is a registered accountability partner
+    const lockCheck = await db.query(
+      'SELECT user_id FROM accountability_locks WHERE partner_email = $1 AND is_active = true',
+      [email]
+    );
+
+    if (lockCheck.rows.length > 0) {
+      role = 'partner';
+      linkedUserId = lockCheck.rows[0].user_id;
+    }
+
     // Create session with refresh token
     const refreshToken = this.generateRefreshToken();
     const refreshTokenHash = this.hashValue(refreshToken);
@@ -115,15 +131,24 @@ const authService = {
       os: deviceInfo.os || 'macOS',
       ipAddress: deviceInfo.ipAddress || null,
       expiresAt,
+      role,
+      linkedUserId
     });
 
     // Generate JWT access token (15 min)
-    const accessToken = signToken(user.id);
+    const accessToken = signToken({
+      id: user.id,
+      email: user.email,
+      role,
+      linkedUserId
+    });
 
     return {
       accessToken,
       refreshToken,
       user: { id: user.id, email: user.email, name: user.name },
+      role,
+      linkedUserId
     };
   },
 
@@ -139,11 +164,21 @@ const authService = {
     await sessionRepository.updateLastActive(session.id);
 
     // Generate new access token
-    const accessToken = signToken(session.user_id);
+    const role = session.role || 'owner';
+    const linkedUserId = session.linked_user_id || null;
+
+    const accessToken = signToken({
+      id: session.user_id,
+      email: session.email,
+      role,
+      linkedUserId
+    });
 
     return {
       accessToken,
       user: { id: session.user_id, email: session.email, name: session.name },
+      role,
+      linkedUserId
     };
   },
 

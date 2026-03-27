@@ -92,6 +92,39 @@ class AccountabilityService {
             await emailService.sendTamperAlert(lock.partner_email);
         }
     }
+
+    // --- Timed Unlocks ---
+
+    issueUnlockToken(userId) {
+        const crypto = require('crypto');
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes window
+
+        if (!this.unlockTokens) {
+            this.unlockTokens = new Map();
+        }
+
+        this.unlockTokens.set(userId, { token, expiresAt });
+        return token;
+    }
+
+    validateUnlockToken(userId, providedToken) {
+        if (!this.unlockTokens) return false;
+
+        const record = this.unlockTokens.get(userId);
+        if (!record) return false;
+
+        if (Date.now() > record.expiresAt) {
+            this.unlockTokens.delete(userId);
+            return false;
+        }
+
+        if (record.token === providedToken) {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 module.exports = new AccountabilityService();

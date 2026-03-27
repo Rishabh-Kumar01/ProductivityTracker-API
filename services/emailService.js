@@ -83,3 +83,43 @@ exports.sendMultipleFailedPasswordsAlert = async (to) => {
         console.error('[EmailService] Error:', error);
     }
 };
+
+exports.sendUnblockRequest = async (to, domain, reason, duration) => {
+    if (!resend) return console.log(`[EmailService] Simulated Unblock Request to ${to}`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: '🔓 Request: Unblock Domain',
+            html: `
+                <h2>Productivity Tracker Needs Your Review</h2>
+                <p>The owner of this blocker is requesting a temporary unlock for the following domain:</p>
+                <ul>
+                    <li><strong>Domain:</strong> ${domain}</li>
+                    <li><strong>Duration:</strong> ${duration} minutes</li>
+                    <li><strong>Reason:</strong> ${reason}</li>
+                </ul>
+                <p>Please log in to your Partner Portal to approve or deny this request.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};
+
+exports.sendUnblockDecision = async (to, domain, status) => {
+    if (!resend) return console.log(`[EmailService] Simulated Decision email to ${to}`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: `Unlock Request ${status.toUpperCase()}`,
+            html: `
+                <h2>Request ${status.toUpperCase()}</h2>
+                <p>Your accountability partner has ${status} your request to unblock <strong>${domain}</strong>.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};

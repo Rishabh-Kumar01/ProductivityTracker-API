@@ -3,8 +3,10 @@ const router = express.Router();
 const blockerController = require('../controllers/blockerController');
 const { protect } = require('../middleware/auth');
 const { requirePartnerUnlock } = require('../middleware/accountabilityLock');
+const { partnerAccess } = require('../middleware/partnerAccess');
 
 router.use(protect);
+router.use(partnerAccess);
 
 // Sources
 router.get('/sources', blockerController.getSources);

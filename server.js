@@ -25,6 +25,7 @@ app.use('/api/export', require('./routes/exportRoutes'));
 app.use('/api/alerts', require('./routes/alertRoutes'));
 app.use('/api/blocker', require('./routes/blockerRoutes'));
 app.use('/api/accountability', require('./middleware/auth').protect, require('./routes/accountabilityRoutes'));
+app.use('/api/unblock-requests', require('./routes/unblockRequestRoutes'));
 const auth = require('./middleware/auth');
 app.post('/api/heartbeat', auth.protect, require('./controllers/accountabilityController').recordHeartbeat);
 // Unhandled route
@@ -41,6 +42,17 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  
+  // Clean up pending requests hourly
+  setInterval(async () => {
+    try {
+      const { deleteExpiredPending } = require('./repositories/unblockRequestRepository');
+      const count = await deleteExpiredPending(24);
+      if (count > 0) console.log(`Cleaned up ${count} expired pending unblock requests.`);
+    } catch (e) {
+      console.error('Failed to cleanup pending requests:', e);
+    }
+  }, 1000 * 60 * 60);
 });
 
 // Graceful shutdown

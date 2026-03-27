@@ -4,7 +4,7 @@ const activityRepository = {
   async bulkInsert(userId, activities) {
     if (!activities.length) return [];
 
-    const client = await db.pool.connect();
+    const client = await db.connect();
     try {
       await client.query('BEGIN');
 

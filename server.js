@@ -24,7 +24,9 @@ app.use('/api/sessions', require('./routes/sessionRoutes'));
 app.use('/api/export', require('./routes/exportRoutes'));
 app.use('/api/alerts', require('./routes/alertRoutes'));
 app.use('/api/blocker', require('./routes/blockerRoutes'));
-
+app.use('/api/accountability', require('./middleware/auth').protect, require('./routes/accountabilityRoutes'));
+const auth = require('./middleware/auth');
+app.post('/api/heartbeat', auth.protect, require('./controllers/accountabilityController').recordHeartbeat);
 // Unhandled route
 app.use((req, res, next) => {
   res.status(404).json({

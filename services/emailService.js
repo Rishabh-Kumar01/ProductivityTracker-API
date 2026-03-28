@@ -3,7 +3,7 @@ const { Resend } = require('resend');
 // Only initialize Resend if API key is provided
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 // Use a verified domain or resend's onboarding email. Typically: "onboarding@resend.dev" for testing.
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@sam-focussync.com';
 
 exports.sendOTP = async (to, otp) => {
     if (!resend) {

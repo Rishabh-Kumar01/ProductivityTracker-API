@@ -14,7 +14,7 @@ class ExportController {
          FROM activities
          WHERE user_id = $1 AND start_time >= $2 AND end_time <= $3
          ORDER BY start_time ASC`,
-        [req.user.id, startDate, endDate]
+        [req.targetUserId, startDate, endDate]
       );
 
       if (!rows.length) {

@@ -1,12 +1,12 @@
 const express = require('express');
 const summaryController = require('../controllers/summaryController');
 const { protect } = require('../middleware/auth');
-const { ownerOnly } = require('../middleware/partnerAccess');
+const { partnerAccess } = require('../middleware/partnerAccess');
 
 const router = express.Router();
 
 router.use(protect);
-router.use(ownerOnly);
+router.use(partnerAccess);
 
 router.get('/daily', summaryController.getDaily);
 router.get('/weekly', summaryController.getWeekly);

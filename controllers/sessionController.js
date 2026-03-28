@@ -4,7 +4,7 @@ const AppError = require('../utils/error');
 class SessionController {
   getActiveSessions = async (req, res, next) => {
     try {
-      const sessions = await sessionRepository.getActiveSessions(req.user.id);
+      const sessions = await sessionRepository.getActiveSessions(req.targetUserId);
       res.status(200).json({ status: 'success', data: sessions });
     } catch (err) {
       next(err);

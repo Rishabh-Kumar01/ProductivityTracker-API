@@ -4,7 +4,7 @@ class SummaryController {
   getDaily = async (req, res, next) => {
     try {
       const { date } = req.query; // YYYY-MM-DD
-      const summary = await summaryService.getDailySummary(req.user.id, date);
+      const summary = await summaryService.getDailySummary(req.targetUserId, date);
       res.status(200).json({ status: 'success', data: summary });
     } catch (err) {
       next(err);
@@ -14,7 +14,7 @@ class SummaryController {
   getWeekly = async (req, res, next) => {
     try {
       const { date } = req.query; // YYYY-MM-DD reference point
-      const summary = await summaryService.getWeeklySummary(req.user.id, date);
+      const summary = await summaryService.getWeeklySummary(req.targetUserId, date);
       res.status(200).json({ status: 'success', data: summary });
     } catch (err) {
       next(err);
@@ -26,7 +26,7 @@ class SummaryController {
       const { startDate, endDate } = req.query;
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const summary = await summaryService.getRangeSummary(req.user.id, start, end);
+      const summary = await summaryService.getRangeSummary(req.targetUserId, start, end);
       res.status(200).json({ status: 'success', data: summary });
     } catch (err) {
       next(err);
@@ -36,7 +36,7 @@ class SummaryController {
   getHourly = async (req, res, next) => {
     try {
       const { startDate, endDate } = req.query;
-      const hourly = await summaryService.getHourlySummary(req.user.id, startDate, endDate);
+      const hourly = await summaryService.getHourlySummary(req.targetUserId, startDate, endDate);
       res.status(200).json({ status: 'success', data: hourly });
     } catch (err) {
       next(err);
@@ -56,7 +56,7 @@ class SummaryController {
       } else {
         return next(new AppError('date or startDate/endDate required', 400));
       }
-      const websites = await summaryService.getWebsites(req.user.id, start, end);
+      const websites = await summaryService.getWebsites(req.targetUserId, start, end);
       res.status(200).json({ status: 'success', data: websites });
     } catch (err) {
       next(err);

@@ -25,4 +25,6 @@ router.get('/status', getStatus);
 router.get('/events', getEvents);
 router.post('/tamper-event', reportTamperEvent);
 
+router.post('/events/:eventId/revert', require('../controllers/accountabilityController').revertEvent);
+
 module.exports = router;

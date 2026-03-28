@@ -13,7 +13,7 @@ class ActivityController {
   getActivities = async (req, res, next) => {
     try {
       const { cursor, limit, category, appName } = req.query;
-      const activities = await activityService.getActivities(req.user.id, {
+      const activities = await activityService.getActivities(req.targetUserId, {
         cursor,
         limit: limit ? parseInt(limit) : 50,
         category,
@@ -29,7 +29,7 @@ class ActivityController {
     try {
       const { q, limit } = req.query;
       const activities = await activityService.searchActivities(
-        req.user.id,
+        req.targetUserId,
         q,
         limit ? parseInt(limit) : 50
       );

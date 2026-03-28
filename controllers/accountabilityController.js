@@ -117,3 +117,16 @@ exports.reportTamperEvent = async (req, res) => {
         res.status(500).json({ status: 'error', message: error.message });
     }
 };
+
+exports.revertEvent = async (req, res, next) => {
+    try {
+        const result = await accountabilityService.revertEvent(
+            req.params.eventId,
+            req.targetUserId,  // the owner's user ID
+            req.user           // the partner performing the revert
+        );
+        res.status(200).json({ status: 'success', data: result });
+    } catch (error) {
+        next(error);
+    }
+};

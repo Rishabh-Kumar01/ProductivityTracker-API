@@ -195,3 +195,21 @@ exports.sendUnblockDenialToOwner = async (to, domain) => {
         console.error('[EmailService] Error:', error);
     }
 };
+
+exports.sendUnlockMutationsAlert = async (to, count, timestamp) => {
+    if (!resend) return console.log(`[EmailService] Simulated Mutations Alert to ${to} (${count} changes)`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: '⚠️ Changes made during unlock session',
+            html: `
+                <h2>Productivity Tracker Alert</h2>
+                <p>Your partner unlocked their blocker settings and made <strong>${count} change(s)</strong> during a 5-minute window that ended at ${timestamp}.</p>
+                <p>Please log in to your Partner Portal to review and revert any unauthorized changes.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};

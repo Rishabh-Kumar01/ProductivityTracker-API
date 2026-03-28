@@ -71,7 +71,7 @@ const requirePartnerUnlock = async (req, res, next) => {
         }
 
         // Password matches! Proceed
-        const newToken = accountabilityService.issueUnlockToken(targetUserId);
+        const newToken = await accountabilityService.issueUnlockToken(targetUserId, req);
         
         // Log successful bypass
         await accountabilityRepository.logEvent(targetUserId, 'physical_password_unlock', {

@@ -88,6 +88,12 @@ class AccountabilityRepository {
         const result = await db.query(query, [userId, minutes]);
         return parseInt(result.rows[0].count, 10);
     }
+
+    async getEventById(eventId) {
+        const query = `SELECT * FROM accountability_events WHERE id = $1`;
+        const result = await db.query(query, [eventId]);
+        return result.rows[0];
+    }
 }
 
 module.exports = new AccountabilityRepository();

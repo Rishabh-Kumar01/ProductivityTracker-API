@@ -50,7 +50,7 @@ const authService = {
     // Send via Resend
     try {
       await resend.emails.send({
-        from: 'ProductivityTracker <onboarding@resend.dev>',
+        from: `FocusSync <${process.env.RESEND_FROM_EMAIL || 'noreply@sam-focussync.com'}>`,
         to: email,
         subject: 'Your ProductivityTracker Login Code',
         html: `

@@ -1,6 +1,7 @@
 const requestRepo = require('../repositories/unblockRequestRepository');
 const blockerRepo = require('../repositories/blockerRepository');
 const accountabilityLockRepo = require('../repositories/accountabilityRepository');
+const userRepository = require('../repositories/userRepository');
 const emailService = require('./emailService');
 const AppError = require('../utils/error');
 
@@ -56,13 +57,37 @@ const unblockRequestService = {
 
     if (status === 'approved') {
       await blockerRepo.tempUnblockDomain(req.domain_id, targetUserId, req.duration_minutes);
-    }
+      
+      // Log approval event
+      await accountabilityLockRepo.logEvent(targetUserId, 'temp_unblock_approved', {
+        domain: req.domain,
+        minutes: req.duration_minutes
+      }, true);
 
-    // Notify the user via email that their request was resolved
-    try {
-      await emailService.sendUnblockDecision(req.user_email, req.domain, status);
-    } catch (err) {
-      console.error('Failed to email owner about request resolution', err);
+      // Notify owner about approval
+      try {
+        const owner = await userRepository.findById(targetUserId);
+        if (owner) {
+          await emailService.sendUnblockApprovalToOwner(owner.email, req.domain, req.duration_minutes);
+        }
+      } catch (err) {
+        console.error('Failed to email owner about approval:', err);
+      }
+    } else if (status === 'denied') {
+      // Log denial event
+      await accountabilityLockRepo.logEvent(targetUserId, 'temp_unblock_denied', {
+        domain: req.domain
+      }, true);
+
+      // Notify owner about denial
+      try {
+        const owner = await userRepository.findById(targetUserId);
+        if (owner) {
+          await emailService.sendUnblockDenialToOwner(owner.email, req.domain);
+        }
+      } catch (err) {
+        console.error('Failed to email owner about denial:', err);
+      }
     }
 
     return updated;

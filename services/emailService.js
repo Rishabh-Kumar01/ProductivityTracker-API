@@ -123,3 +123,75 @@ exports.sendUnblockDecision = async (to, domain, status) => {
         console.error('[EmailService] Error:', error);
     }
 };
+
+exports.sendLockDeactivatedToPartner = async (to) => {
+    if (!resend) return console.log(`[EmailService] Simulated Lock Deactivated (partner) to ${to}`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: '🔓 Accountability lock was deactivated',
+            html: `
+                <h2>Productivity Tracker Alert</h2>
+                <p>The accountability lock on your partner's account was deactivated at <strong>${new Date().toLocaleString()}</strong>.</p>
+                <p>All blocker settings are now freely editable.</p>
+                <p>If you didn't authorize this, please reach out to your partner.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};
+
+exports.sendLockDeactivatedToOwner = async (to) => {
+    if (!resend) return console.log(`[EmailService] Simulated Lock Deactivated (owner) to ${to}`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: '🔓 Your accountability lock has been deactivated',
+            html: `
+                <h2>Productivity Tracker</h2>
+                <p>Your accountability partner has deactivated the lock on your account.</p>
+                <p>You can now freely modify your blocker settings.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};
+
+exports.sendUnblockApprovalToOwner = async (to, domain, minutes) => {
+    if (!resend) return console.log(`[EmailService] Simulated Approval email to ${to} for ${domain}`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: '✅ Your unblock request was approved',
+            html: `
+                <h2>Request Approved</h2>
+                <p>Your request to temporarily unblock <strong>${domain}</strong> was approved for <strong>${minutes} minutes</strong>.</p>
+                <p>It will be re-blocked automatically when the timer expires.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};
+
+exports.sendUnblockDenialToOwner = async (to, domain) => {
+    if (!resend) return console.log(`[EmailService] Simulated Denial email to ${to} for ${domain}`);
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: '❌ Your unblock request was denied',
+            html: `
+                <h2>Request Denied</h2>
+                <p>Your request to temporarily unblock <strong>${domain}</strong> was denied by your accountability partner.</p>
+            `
+        });
+    } catch (error) {
+        console.error('[EmailService] Error:', error);
+    }
+};

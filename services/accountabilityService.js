@@ -1,22 +1,50 @@
 const bcrypt = require('bcryptjs');
 const accountabilityRepository = require('../repositories/accountabilityRepository');
+const userRepository = require('../repositories/userRepository');
 const emailService = require('./emailService');
+const AppError = require('../utils/error');
+const db = require('../config/databaseConfig');
 
 // In-memory store for OTPs (for production, use Redis)
 // Format: { 'email@example.com': { otp: '123456', expires: Date.now() + 10mins } }
 const pendingOTPs = new Map();
+
+// Track OTP send counts for rate limiting: email -> [timestamps]
+const otpSendHistory = new Map();
 
 class AccountabilityService {
     
     // --- OTP Flow ---
 
     async sendActivationOTP(partnerEmail) {
+        // Rate limit: 60-second cooldown
+        const existing = pendingOTPs.get(partnerEmail);
+        if (existing && (Date.now() - (existing.createdAt || 0)) < 60 * 1000) {
+            throw new AppError('Please wait 60 seconds before sending another code.', 429);
+        }
+
+        // Rate limit: max 5 OTPs per hour
+        const history = otpSendHistory.get(partnerEmail) || [];
+        const oneHourAgo = Date.now() - 60 * 60 * 1000;
+        const recentSends = history.filter(ts => ts > oneHourAgo);
+        if (recentSends.length >= 5) {
+            throw new AppError('Too many verification attempts. Try again in an hour.', 429);
+        }
+
         // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-        pendingOTPs.set(partnerEmail, { otp, expiresAt });
+        pendingOTPs.set(partnerEmail, { otp, expiresAt, createdAt: Date.now() });
         
+        // Track send for hourly cap
+        recentSends.push(Date.now());
+        otpSendHistory.set(partnerEmail, recentSends);
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`[DEV] Accountability OTP for ${partnerEmail}: ${otp}`);
+        }
+
         await emailService.sendOTP(partnerEmail, otp);
         return true;
     }
@@ -51,8 +79,29 @@ class AccountabilityService {
     }
 
     async deactivateLock(userId) {
+        // Grab lock info before deactivating so we can notify
+        const lock = await accountabilityRepository.getActiveLock(userId);
         await accountabilityRepository.deactivateLock(userId);
-        await accountabilityRepository.logEvent(userId, 'lock_deactivated', {}, false);
+        await accountabilityRepository.logEvent(userId, 'lock_deactivated', {}, true);
+
+        if (lock) {
+            // Notify partner
+            try {
+                await emailService.sendLockDeactivatedToPartner(lock.partner_email);
+            } catch (e) {
+                console.error('Failed to email partner about deactivation:', e);
+            }
+
+            // Notify owner
+            try {
+                const owner = await userRepository.findById(userId);
+                if (owner) {
+                    await emailService.sendLockDeactivatedToOwner(owner.email);
+                }
+            } catch (e) {
+                console.error('Failed to email owner about deactivation:', e);
+            }
+        }
     }
 
     async getStatus(userId) {
